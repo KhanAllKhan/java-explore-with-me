@@ -1,8 +1,11 @@
 package ru.practicum;
 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.dto.HitRequestDto;
+import ru.practicum.dto.StatResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,18 +17,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StatService {
 
-    private final StatRepository statRepository;
+    private final StatRepository statsRepository;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public void recordRequest(HitRequestDto requestDto) {
-        Stat stat = new Stat();
-        stat.setApp(requestDto.getApp());
-        stat.setUri(requestDto.getUri());
-        stat.setIp(requestDto.getIp());
-        stat.setDate(LocalDateTime.parse(requestDto.getTimestamp(), FORMATTER));
-        statRepository.save(stat);
-
+        Stat stats = new Stat();
+        stats.setApp(requestDto.getApp());
+        stats.setUri(requestDto.getUri());
+        stats.setIp(requestDto.getIp());
+        stats.setDate(LocalDateTime.parse(requestDto.getTimestamp(), FORMATTER));
+        statsRepository.save(stats);
+        log.info("Сохранена статистика: app={}, uri={}, ip={}", stats.getApp(), stats.getUri(), stats.getIp());
     }
 
     public List<StatResponseDto> getStats(String start, String end, List<String> uris, boolean unique) {
@@ -35,9 +38,9 @@ public class StatService {
         List<Stat> stats;
 
         if (uris != null && !uris.isEmpty()) {
-            stats = statRepository.findByUriInAndDateBetween(uris, startDate, endDate);
+            stats = statsRepository.findByUriInAndDateBetween(uris, startDate, endDate);
         } else {
-            stats = statRepository.findByDateBetween(startDate, endDate);
+            stats = statsRepository.findByDateBetween(startDate, endDate);
         }
 
         Map<String, Long> hitsMap;

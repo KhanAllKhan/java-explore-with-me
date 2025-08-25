@@ -3,6 +3,8 @@ package ru.practicum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.HitRequestDto;
+import ru.practicum.dto.StatResponseDto;
 
 import java.util.List;
 
@@ -12,20 +14,20 @@ import java.util.List;
 @RequestMapping
 public class StatController {
 
-    private final StatService statService;
+    private final StatService statsService;
 
     @PostMapping("/hit")
     public void recordHit(@RequestBody HitRequestDto hitRequestDto) {
-
-        statService.recordRequest(hitRequestDto);
+        log.info("Получен запрос POST /hit: {}", hitRequestDto);
+        statsService.recordRequest(hitRequestDto);
     }
 
     @GetMapping("/stats")
     public List<StatResponseDto> getStats(@RequestParam String start,
-                                           @RequestParam String end,
-                                           @RequestParam(required = false) List<String> uris,
-                                           @RequestParam(defaultValue = "false") boolean unique) {
-
-        return statService.getStats(start, end, uris, unique);
+                                          @RequestParam String end,
+                                          @RequestParam(required = false) List<String> uris,
+                                          @RequestParam(defaultValue = "false") boolean unique) {
+        log.info("Получен запрос GET /stats со start={}, end={}, uris={}, unique={}", start, end, uris, unique);
+        return statsService.getStats(start, end, uris, unique);
     }
 }
