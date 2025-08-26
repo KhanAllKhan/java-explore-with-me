@@ -1,5 +1,6 @@
 services:
 
+  # API-сервис
   ewm-api:
     build:
       context: ./ewm-api
@@ -11,19 +12,8 @@ services:
     environment:
       SHAREIT_URL: ${SHAREIT_URL:-http://host.docker.internal:8080}
       SERVER_PORT: ${EWMPORT:-8080}
-    depends_on:
-      - stats-db      # если нужен порядок старта
 
-  stats-db:
-    image: postgres:16.1
-    container_name: stats-db
-    environment:
-      POSTGRES_DB: stats
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - stats-db-data:/var/lib/postgresql/data
-
+  # Сервис статистики
   ewm-stats:
     build:
       context: ./ewm-statistic-service
@@ -35,8 +25,10 @@ services:
     environment:
       SERVER_PORT: ${STATS_PORT:-9090}
     depends_on:
-      - stats-db
-      - ewm-api   # если нужно ждать API
+      - ewm-api
 
 volumes:
+  # тома, если хотите БД
   stats-db-data:
+
+# версии в Compose V2 не указываются
