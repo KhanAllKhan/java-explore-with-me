@@ -1,14 +1,38 @@
+version: '3.8'
+
 services:
-  stats-server:
-    ports:
-      - "9090:9090"
 
-  stats-db:
-    image: postgres:16.1
-
-  ewm-service:
+  ewm-api:
+    build:
+      context: ./ewm-api
+      dockerfile: Dockerfile
+    image: java-explore/ewm-api:latest
+    container_name: ewm-api
     ports:
       - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: ${EWMPORT:-8080}
+      SHAREIT_SERVER_URL: ${SHAREIT_URL}
 
-  ewm-db:
-    image: postgres:16.1
+  ewm-stats:
+    build:
+      context: ./ewm-statistic-service
+      dockerfile: Dockerfile
+    image: java-explore/ewm-stats:latest
+    container_name: ewm-stats
+    ports:
+      - "9090:9090"
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: ${STATS_PORT:-9090}
+      SHAREIT_SERVER_URL: ${SHAREIT_URL}
+    depends_on:
+      - ewm-api
+
+networks:
+  default:
+    name: java-explore-net
+    driver: bridge
