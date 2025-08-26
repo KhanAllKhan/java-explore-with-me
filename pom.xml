@@ -18,7 +18,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>ewm-api</module>
 		<module>ewm-statistic-service</module>
 	</modules>
 

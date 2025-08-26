@@ -1,22 +1,29 @@
 services:
-  stats-server:
-    build: ./ewm-stats-service/ewm-stats-service
-    image: stat-server
+  stats-db:
+    image: postgres:13
+    container_name: stats-db
+    environment:
+      POSTGRES_DB: stats_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - stats_data:/var/lib/postgresql/data
+
+  stats-service:
+    build:
+      context: .
+      dockerfile: ewm-statistic-service/Dockerfile
+    container_name: stats-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "9090:9090"
     depends_on:
       - stats-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stat_db
-      - SPRING_DATASOURCE_USERNAME=dbuser
-      - SPRING_DATASOURCE_PASSWORD=12345
 
-  stats-db:
-    image: postgres:16.1
-    container_name: stats-db
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=stat_db
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=12345
+volumes:
+  stats_data:
