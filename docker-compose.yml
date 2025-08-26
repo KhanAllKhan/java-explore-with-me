@@ -1,34 +1,22 @@
 services:
-
-  # API-сервис
-  ewm-api:
-    build:
-      context: ./ewm-api
-      dockerfile: Dockerfile
-    image: java-explore/ewm-api:latest
-    container_name: ewm-api
-    ports:
-      - "8080:8080"
-    environment:
-      SHAREIT_URL: ${SHAREIT_URL:-http://host.docker.internal:8080}
-      SERVER_PORT: ${EWMPORT:-8080}
-
-  # Сервис статистики
-  ewm-stats:
-    build:
-      context: ./ewm-statistic-service
-      dockerfile: Dockerfile
-    image: java-explore/ewm-stats:latest
-    container_name: ewm-stats
+  stats-server:
+    build: ./ewm-stats-service/ewm-stats-service
+    image: stat-server
     ports:
       - "9090:9090"
-    environment:
-      SERVER_PORT: ${STATS_PORT:-9090}
     depends_on:
-      - ewm-api
+      - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stat_db
+      - SPRING_DATASOURCE_USERNAME=dbuser
+      - SPRING_DATASOURCE_PASSWORD=12345
 
-volumes:
-  # тома, если хотите БД
-  stats-db-data:
-
-# версии в Compose V2 не указываются
+  stats-db:
+    image: postgres:16.1
+    container_name: stats-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=stat_db
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=12345
