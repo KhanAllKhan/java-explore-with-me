@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   ewm-api:
@@ -10,11 +8,21 @@ services:
     container_name: ewm-api
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
+      SHAREIT_URL: ${SHAREIT_URL:-http://host.docker.internal:8080}
       SERVER_PORT: ${EWMPORT:-8080}
-      SHAREIT_SERVER_URL: ${SHAREIT_URL}
+    depends_on:
+      - stats-db      # если нужен порядок старта
+
+  stats-db:
+    image: postgres:16.1
+    container_name: stats-db
+    environment:
+      POSTGRES_DB: stats
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - stats-db-data:/var/lib/postgresql/data
 
   ewm-stats:
     build:
@@ -24,15 +32,11 @@ services:
     container_name: ewm-stats
     ports:
       - "9090:9090"
-    env_file:
-      - .env
     environment:
       SERVER_PORT: ${STATS_PORT:-9090}
-      SHAREIT_SERVER_URL: ${SHAREIT_URL}
     depends_on:
-      - ewm-api
+      - stats-db
+      - ewm-api   # если нужно ждать API
 
-networks:
-  default:
-    name: java-explore-net
-    driver: bridge
+volumes:
+  stats-db-data:
