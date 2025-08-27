@@ -1,15 +1,17 @@
+version: "3.8"
+
 services:
   stats-db:
     image: postgres:13-alpine
     container_name: stats-db
     environment:
-      POSTGRES_DB: stats_db
-      POSTGRES_USER: admin
+      POSTGRES_DB:       stats_db
+      POSTGRES_USER:     admin
       POSTGRES_PASSWORD: password
     volumes:
       - stats_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d stats_db"]
+      test: ["CMD-SHELL","pg_isready -U admin -d stats_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -18,16 +20,21 @@ services:
 
   stats-server:
     build:
-      context: .   # 👈 собираем из корня, а не из ewm-statistic-service
-      dockerfile: Dockerfile
-    container_name: stats-service
+      context: .
+      dockerfile: ewm-statistic-service/ewm-stats-service/Dockerfile
+    container_name: stats-server
     depends_on:
       stats-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_URL:         jdbc:postgresql://stats-db:5432/stats_db
+      SPRING_DATASOURCE_USERNAME:    admin
+      SPRING_DATASOURCE_PASSWORD:    password
+
+      # Hibernate создаст таблицы по вашим @Entity
+      SPRING_SQL_INIT_MODE:          never
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+
     ports:
       - "9090:9090"
 
