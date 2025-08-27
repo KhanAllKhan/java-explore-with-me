@@ -5,4 +5,3 @@ CREATE TABLE IF NOT EXISTS endpoint_stats (
     ip VARCHAR(255),
     date TIMESTAMP NOT NULL
 );
-//
