@@ -18,7 +18,7 @@ services:
 
   stats-server:
     build:
-      context: ./ewm-statistic-service
+      context: .   # 👈 собираем из корня, а не из ewm-statistic-service
       dockerfile: Dockerfile
     container_name: stats-service
     depends_on:
@@ -28,9 +28,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      SPRING_SQL_INIT_MODE: always
-      SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
     ports:
       - "9090:9090"
 
