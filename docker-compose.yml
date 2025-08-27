@@ -1,38 +1,38 @@
 services:
-
   stats-db:
     image: postgres:13-alpine
     container_name: stats-db
     environment:
-      POSTGRES_DB:       stats_db
-      POSTGRES_USER:     admin
+      POSTGRES_DB: stats_db
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
     volumes:
       - stats_data:/var/lib/postgresql/data
-      - ./ewm-statistic-service/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    # Уберите schema.sql если его нет или он вызывает ошибки
     healthcheck:
-      test: ["CMD-SHELL","pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d stats_db"]
       interval: 5s
       timeout: 5s
       retries: 5
     ports:
       - "5432:5432"
 
-  stats-server:
+  stats-service:  # Изменил имя с stats-server на stats-service
     build:
       context: .
       dockerfile: ewm-statistic-service/Dockerfile
-    container_name: stats-server
+    container_name: stats-service
     depends_on:
       stats-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL:            jdbc:postgresql://stats-db:5432/stats_db
-      SPRING_DATASOURCE_USERNAME:       admin
-      SPRING_DATASOURCE_PASSWORD:       password
-      SPRING_JPA_HIBERNATE_DDL_AUTO:    none
-      SPRING_SQL_INIT_MODE:             always
-      SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      # Уберите эти настройки если нет schema.sql
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      # SPRING_SQL_INIT_MODE: always
+      # SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
     ports:
       - "9090:9090"
 
