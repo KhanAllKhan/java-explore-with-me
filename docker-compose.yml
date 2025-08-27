@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   stats-db:
     image: postgres:13-alpine
@@ -8,7 +10,6 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - stats_data:/var/lib/postgresql/data
-    # Уберите schema.sql если его нет или он вызывает ошибки
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d stats_db"]
       interval: 5s
@@ -17,10 +18,10 @@ services:
     ports:
       - "5432:5432"
 
-  stats-service:  # Изменил имя с stats-server на stats-service
+  stats-service:
     build:
-      context: .
-      dockerfile: ewm-statistic-service/Dockerfile
+      context: ./ewm-statistic-service
+      dockerfile: Dockerfile
     container_name: stats-service
     depends_on:
       stats-db:
@@ -29,10 +30,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
-      # Уберите эти настройки если нет schema.sql
-      # SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      # SPRING_SQL_INIT_MODE: always
-      # SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_SQL_INIT_MODE: always
+      SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
     ports:
       - "9090:9090"
 
