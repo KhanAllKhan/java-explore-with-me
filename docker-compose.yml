@@ -1,7 +1,17 @@
+version: "3.8"
+
+networks:
+  stats-net:
+    driver: bridge
+
+volumes:
+  stats_data:
+
 services:
   stats-db:
-    image: postgres:13
+    image: postgres:13-alpine
     container_name: stats-db
+    restart: always
     environment:
       POSTGRES_DB: stats_db
       POSTGRES_USER: admin
@@ -10,20 +20,32 @@ services:
       - "5432:5432"
     volumes:
       - stats_data:/var/lib/postgresql/data
+      - ./ewm-statistic-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d stats_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stats-net
 
   stats-service:
     build:
       context: .
       dockerfile: ewm-statistic-service/Dockerfile
     container_name: stats-service
+    restart: on-failure
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
+      SPRING_SQL_INIT_MODE: always
+      SPRING_SQL_INIT_SCHEMA_LOCATIONS: classpath:/schema.sql
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
     ports:
       - "9090:9090"
     depends_on:
-      - stats-db
-
-volumes:
-  stats_data:
+      stats-db:
+        condition: service_healthy
+    networks:
+      - stats-net
