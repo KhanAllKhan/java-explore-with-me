@@ -22,7 +22,7 @@
 	<modules>
 		<module>ewm-statistic-service</module>
 		<module>ewm-service</module>
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>21</java.version>
