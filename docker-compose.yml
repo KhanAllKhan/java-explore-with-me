@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # База данных для статистики
   stats-db:
@@ -9,6 +7,7 @@ services:
       POSTGRES_DB: stats
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust  # ← ДОБАВЬТЕ ЭТУ СТРОЧКУ!
     volumes:
       - stats_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,10 +16,29 @@ services:
       timeout: 5s
       retries: 5
 
+  # База данных для основного сервиса
+  ewm-db:
+    image: postgres:13-alpine
+    container_name: ewm-db
+    environment:
+      POSTGRES_DB: explore_with_me
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust  # ← ДОБАВЬТЕ ЭТУ СТРОЧКУ!
+    volumes:
+      - ewm_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d explore_with_me"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
   # Сервис статистики
   stats-server:
     build:
-      context: .
+      context: .  # ← ИЗМЕНИТЕ КОНТЕКСТ!
       dockerfile: ewm-statistic-service/ewm-stats-service/Dockerfile
     container_name: stats-server
     depends_on:
@@ -33,24 +51,6 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
       - "9090:9090"
-
-  # База данных для основного сервиса
-  ewm-db:
-    image: postgres:13-alpine
-    container_name: ewm-db
-    environment:
-      POSTGRES_DB: explore_with_me  # Изменил на explore_with_me
-      POSTGRES_USER: postgres       # Изменил на postgres
-      POSTGRES_PASSWORD: postgres   # Изменил на postgres
-    volumes:
-      - ewm_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d explore_with_me"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5432:5432"
 
   # Основной сервис
   ewm-service:
