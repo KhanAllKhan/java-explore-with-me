@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class StatsServiceImpl implements StatService {
+public class StatServiceImpl implements StatService {
     private final StatRepository statRepository;
 
     @Override

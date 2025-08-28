@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS stats (
     id   SERIAL PRIMARY KEY,
-    app  VARCHAR(255),
-    uri  VARCHAR(255),
-    ip   VARCHAR(255),
+    app  VARCHAR(255) NOT NULL,
+    uri  VARCHAR(255) NOT NULL,
+    ip   VARCHAR(255) NOT NULL,
     date TIMESTAMP NOT NULL
 );

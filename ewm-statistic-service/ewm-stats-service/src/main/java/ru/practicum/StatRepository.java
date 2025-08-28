@@ -7,8 +7,6 @@ import ru.practicum.dto.ViewsStatsRequest;
 import java.util.List;
 
 public interface StatRepository {
-
-    // Добавьте эти методы
     void saveHit(EndpointHit hit);
 
     List<ViewStats> getStats(ViewsStatsRequest request);

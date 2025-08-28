@@ -5,13 +5,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
+@Table(name = "stats")
 @Getter
 @Setter
 @Builder
-@Entity
-@Table(name = "stats")
+@NoArgsConstructor
+@AllArgsConstructor
 public class EndpointHitModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +26,6 @@ public class EndpointHitModel {
     @Column(nullable = false)
     private String ip;
 
-    @Column(name = "created", nullable = false)
+    @Column(name = "date", nullable = false)
     private LocalDateTime timestamp;
 }
