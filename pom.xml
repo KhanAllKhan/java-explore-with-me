@@ -21,6 +21,7 @@
 
 	<modules>
 		<module>ewm-statistic-service</module>
+		<module>ewm-service</module>
 	</modules>
 
 	<properties>

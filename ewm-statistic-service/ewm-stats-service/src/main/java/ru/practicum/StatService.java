@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.HitRequestDto;
 import ru.practicum.dto.StatResponseDto;
+import ru.practicum.model.Stat;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

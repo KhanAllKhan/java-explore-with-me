@@ -2,6 +2,7 @@ package ru.practicum;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.practicum.model.Stat;
 
 import java.time.LocalDateTime;
 import java.util.List;
