@@ -3,7 +3,6 @@ package ru.practicum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
@@ -20,10 +19,12 @@ public class StatRepositoryImpl implements StatRepository {
 
     @Override
     public void saveHit(EndpointHit hit) {
-        String sql = "INSERT INTO stats (app, uri, ip, date) " +
-                "VALUES (:app, :uri, :ip, :timestamp)";
+        String sql = """
+            INSERT INTO stats (app, uri, ip, date)
+            VALUES (:app, :uri, :ip, :timestamp)
+            """;
 
-        SqlParameterSource params = new MapSqlParameterSource()
+        var params = new MapSqlParameterSource()
                 .addValue("app", hit.getApp())
                 .addValue("uri", hit.getUri())
                 .addValue("ip", hit.getIp())
@@ -34,45 +35,58 @@ public class StatRepositoryImpl implements StatRepository {
 
     @Override
     public List<ViewStats> getStats(ViewsStatsRequest request) {
-        String sql = "SELECT app, uri, COUNT(ip) as hits " +
-                "FROM stats " +
-                "WHERE date BETWEEN :start AND :end " +
-                "AND (:uris IS NULL OR uri IN (:uris)) " +
-                "GROUP BY app, uri " +
-                "ORDER BY hits DESC";
-
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("start", Timestamp.valueOf(request.getStart()))
-                .addValue("end", Timestamp.valueOf(request.getEnd()))
-                .addValue("uris", request.getUris() != null && !request.getUris().isEmpty() ? request.getUris() : null);
-
-        return jdbcTemplate.query(sql, params, (rs, rowNum) ->
-                new ViewStats(
-                        rs.getString("app"),
-                        rs.getString("uri"),
-                        rs.getLong("hits")
-                ));
+        return queryStats(request, "COUNT(ip)");
     }
 
     @Override
     public List<ViewStats> getUniqueStats(ViewsStatsRequest request) {
-        String sql = "SELECT app, uri, COUNT(DISTINCT ip) as hits " +
-                "FROM stats " +
-                "WHERE date BETWEEN :start AND :end " +
-                "AND (:uris IS NULL OR uri IN (:uris)) " +
-                "GROUP BY app, uri " +
-                "ORDER BY hits DESC";
+        return queryStats(request, "COUNT(DISTINCT ip)");
+    }
 
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("start", Timestamp.valueOf(request.getStart()))
-                .addValue("end", Timestamp.valueOf(request.getEnd()))
-                .addValue("uris", request.getUris() != null && !request.getUris().isEmpty() ? request.getUris() : null);
+    /**
+     * Вспомогательный метод для обоих запросов:
+     * формирует SQL с динамическим COUNT-выражением,
+     * опциональным условием по списку uris и limit.
+     */
+    private List<ViewStats> queryStats(ViewsStatsRequest req, String countExpr) {
+        // 1. Базовый SQL с подстановкой countExpr
+        String base = String.format(
+                "SELECT app, uri, %s AS hits " +
+                        "FROM stats " +
+                        "WHERE date BETWEEN :start AND :end ",
+                countExpr
+        );
 
-        return jdbcTemplate.query(sql, params, (rs, rowNum) ->
-                new ViewStats(
+        var sql = new StringBuilder(base);
+        var params = new MapSqlParameterSource()
+                .addValue("start", Timestamp.valueOf(req.getStart()))
+                .addValue("end",   Timestamp.valueOf(req.getEnd()));
+
+        // 2. Добавляем условие IN (:uris), если список задан
+        if (req.getUris() != null && !req.getUris().isEmpty()) {
+            sql.append("AND uri IN (:uris) ");
+            params.addValue("uris", req.getUris());
+        }
+
+        // 3. Группировка и сортировка
+        sql.append("GROUP BY app, uri ")
+                .append("ORDER BY hits DESC ");
+
+        // 4. Ограничение количества строк, если есть limit
+        if (req.hasLimitCondition()) {
+            sql.append("LIMIT :limit");
+            params.addValue("limit", req.getLimit());
+        }
+
+        // 5. Запускаем запрос и мапим в DTO
+        return jdbcTemplate.query(
+                sql.toString(),
+                params,
+                (rs, rowNum) -> new ViewStats(
                         rs.getString("app"),
                         rs.getString("uri"),
                         rs.getLong("hits")
-                ));
+                )
+        );
     }
 }
