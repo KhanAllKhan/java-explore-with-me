@@ -1,32 +1,28 @@
 package ru.practicum.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
-
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@ToString
+@Setter
 @Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class ViewsStatsRequest {
+    private LocalDateTime start;
+    private LocalDateTime end;
     private List<String> uris;
-
-    @Builder.Default
-    private LocalDateTime start = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-
-    @Builder.Default
-    private LocalDateTime end = LocalDateTime.now();
-
-    private boolean unique;
-
+    private Boolean unique;
+    private Integer limit;
     private String application;
-
-    @Builder.Default
-    private Integer limit = null;
 
     public boolean hasLimitCondition() {
         return limit != null && limit > 0;
+    }
+
+
+    public Boolean isUnique() {
+        return unique;
     }
 }
