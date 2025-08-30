@@ -22,7 +22,7 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.debug("Ошибка преобразования аргумента: {}", e.getMessage(), e);
