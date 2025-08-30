@@ -138,7 +138,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.38</version>  <!-- Обновить версию -->
+                            <scope>provided</scope>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
